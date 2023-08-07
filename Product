@@ -1,0 +1,252 @@
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { message, Button } from 'antd';
+const Products = (props) => {
+    const { editdone, anotherfunction, cartfunction } = props;
+    // const Products = () => {
+    const navigate = useNavigate();
+    const [product, setProduct] = useState([]);
+    const [val, setVal] = useState(0)
+    const [checkout, setCheckout] = useState([])
+    const [cart, setCart] = useState([]);
+    const [limit, setLimit] = useState(10);
+    const [skip, setSkip] = useState(0)
+    const listing = async () => {
+        await axios.get('https://dummyjson.com/products', {
+            params: {
+                limit: limit,
+                skip: skip,
+            }
+        },
+        ).then((res) => {
+            setProduct(res.data.products);
+        });
+
+    };
+
+    useEffect(() => {
+        listing();
+    }, [skip]);
+    const paginationIncrease = () => {
+        setSkip(skip + 10)
+    }
+    const paginationDec = () => {
+        setSkip(skip - 10)
+    }
+    // const handleEdit = (item) => {
+    //     let config = {
+    //         method: 'get',
+    //         maxBodyLength: Infinity,
+    //         url: `https://dummyjson.com/products/${item.id}`,
+    //         headers: {}
+    //     };
+
+    //     axios.request(config)
+    //         .then((response) => {
+    //             navigate('/edit');
+    //             editdone(response.data);
+    //         })
+    //         .catch((error) => {
+    //             console.log(error);
+    //         });
+    // navigate('/edit');
+    // editdone(item);
+    // }
+    // const handleDelete = (item) => {
+    //     let config = {
+    //         method: 'delete',
+    //         maxBodyLength: Infinity,
+    //         url: `https://dummyjson.com/products/${item.id}`,
+    //         headers: {}
+    //     };
+
+    //     axios.request(config)
+    //         .then((response) => {
+    //             console.log(JSON.stringify(response.data));
+    //         })
+    //         .catch((error) => {
+    //             console.log(error);
+    //         });
+
+    // }
+
+    const isItemAlreadyInCart = (cart, newItem) => {
+        return cart.some(item => item.id === newItem.id);
+    };
+    const handleAddToCart = (item) => {
+        if (!isItemAlreadyInCart(cart, item)) {
+            // setCart([...cart, newItem]); // Add the item to the cart if it doesn't already exist
+            setCart([...cart, item]);
+            const finalCart = [...cart, item]
+            console.log(finalCart, "finalCart")
+            anotherfunction(finalCart)
+            cartfunction(finalCart)
+            setVal(val + 1)
+            editdone(item)
+            message.success("added to cart")
+        }
+        else {
+            message.error("already added in cart")
+        }
+
+
+    };
+
+    // const handleDeletefromCart = (itemId) => {
+    //     const updatedCart = cart.filter((item) => item.id !== itemId);
+    //     setCart(updatedCart);
+    //     console.log(updatedCart,"done delete array")
+    //     setCheckout(updatedCart)
+    //     cartfunction(updatedCart)
+    //     setVal(val - 1)
+    //     message.success("Removed from cart");
+    // }
+
+
+    const OpenCart = (cart) => {
+        navigate('/cart')
+        editdone(cart)
+    }
+
+    // const CheckoutDone = () => {
+    //     if (val === 0) {
+    //         message.error("Add to cart first")
+    //     }
+    //     else {
+    //         navigate('/checkout')
+    //     }}
+
+
+    return (
+        <>
+            <h1 style={{ marginTop: '30px', display: 'flex', justifyContent: 'center', margin: '20px 0' }}> Products</h1>
+            <Button style={{ position: 'absolute', top: 0, right: 0, marginTop: '30px' }} onClick={OpenCart}>View Cart: {val}</Button>
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '50px', marginLeft: '30px', marginRight: '20px' }}>
+                <thead>
+                    <tr style={{ borderBottom: '1px solid #1000' }}>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>ID
+                        </th>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>Title
+                        </th>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>Price
+                        </th>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>Brand
+                        </th>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>Picture
+                        </th>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>Action
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {product.map((item) => (
+                        <tr key={item.id} style={{ borderBottom: '1px solid #ccc' }}>
+                            <td style={{ padding: '10px', textAlign: 'left' }}>{item.id}</td>
+                            <td style={{ padding: '10px', textAlign: 'left' }}>{item.title}</td>
+                            <td style={{ padding: '10px', textAlign: 'left' }}>{item.price}</td>
+                            <td style={{ padding: '10px', textAlign: 'left' }}>{item.brand}</td>
+                            <td>  <img
+                                src={item.thumbnail}
+                                alt={item.title}
+                                style={{
+                                    width: '200px',
+                                    height: '200px',
+                                    borderRadius: '5px',
+                                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                }}
+                            />
+                            </td>
+                            <td style={{ padding: '10px', textAlign: 'center' }}>
+                                {/* <button onClick={() => handleEdit(item)}>Edit</button>
+                                <button onClick={() => handleDelete(item)}>Delete</button> */}
+                                <Button onClick={() => handleAddToCart(item)}>Add to cart</Button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+
+
+
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+                <button
+                    style={{
+                        padding: '10px 20px',
+                        margin: '0 5px',
+                        border: '1px solid #ccc',
+                        borderRadius: '5px',
+                        background: 'transparent',
+                        cursor: 'pointer',
+                    }}
+                    onClick={() => paginationDec()}
+                >
+                    Previous
+                </button>
+                <button
+                    style={{
+                        padding: '10px 20px',
+                        margin: '0 5px',
+                        border: '1px solid #ccc',
+                        borderRadius: '5px',
+                        background: 'transparent',
+                        cursor: 'pointer',
+                    }}
+                    onClick={() => paginationIncrease()}
+                >
+                    Next
+                </button>
+            </div>
+
+
+
+
+
+            <div>
+                {/* <h2>Cart</h2> */}
+                {/* <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
+                    <thead>
+                        <tr style={{ borderBottom: '1px solid #ccc' }}>
+                            <th style={{ padding: '10px', textAlign: 'left' }}>ID</th>
+                            <th style={{ padding: '10px', textAlign: 'left' }}>Title</th>
+                            <th style={{ padding: '10px', textAlign: 'left' }}>Price</th>
+                          
+                            <th style={{ padding: '10px', textAlign: 'left' }}>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {cart.map((item) => (
+                            <tr style={{ borderBottom: '1px solid #ccc' }}>
+                                <td style={{ padding: '10px', textAlign: 'left' }}>{item.title}</td>
+                                <td style={{ padding: '10px', textAlign: 'left' }}>${item.price}</td>
+                                <img
+                                src={item.thumbnail}
+                                alt={item.title}
+                                style={{
+                                    width: '200px',
+                                    height: '200px',
+                                    borderRadius: '5px',
+                                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                }}
+                            />
+
+                                <td style={{ padding: '10px', textAlign: 'center' }}>
+                                    <Button onClick={() => handleDeletefromCart(item.id)}>Delete from Cart</Button></td>
+                            </tr>
+                        )
+                        )}
+                    </tbody>
+                </table> */}
+
+                {/* <Button onClick={() => CheckoutDone()}>Checkout</Button> */}
+
+            </div>
+
+
+        </>
+    );
+};
+
+export default Products;
+
